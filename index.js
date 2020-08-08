@@ -312,8 +312,12 @@ function LacrosseWebDevice(log, details, platform) {
 
     this.ambientTemperatureSensor = new Service.TemperatureSensor(details.name);
     this.ambientTemperatureSensor.subtype = "Ambient";
+    if (details.services.probeTemp.value) {
     this.probeTemperatureSensor = new Service.TemperatureSensor(details.name);
     this.probeTemperatureSensor.subtype = "Probe";
+    } else {
+        this.probeTemperatureSensor = null ;
+    }
         
     this.humiditySensor = new Service.HumiditySensor(details.name);
     this.accessoryInfo = new Service.AccessoryInformation();
@@ -321,7 +325,10 @@ function LacrosseWebDevice(log, details, platform) {
 	.setCharacteristic(Characteristic.Manufacturer, "Lacrosse")
 	.setCharacteristic(Characteristic.Model, details.name)
 	.setCharacteristic(Characteristic.SerialNumber, details.device_id);
-    this.services = [this.ambientTemperatureSensor, this.probeTemperatureSensor, this.humiditySensor, this.accessoryInfo];
+    this.services = [this.ambientTemperatureSensor, this.humiditySensor, this.accessoryInfo];
+    if (this.probeTemperatureSensor) {
+        this.services.push(this.probeTemperatureSensor) ;
+    }
     this.setup(this.details);
 }
 
@@ -356,6 +363,7 @@ LacrosseWebDevice.prototype = {
 		    }).updateValue(this.details.services.ambientTemp.value);
 		break;
         case "probeTemp":
+            if (this.probeTemperatureSensor) {
         this.probeTemperatureSensor
             .getCharacteristic(Characteristic.CurrentTemperature)
             .on("get", callback => {
@@ -364,6 +372,7 @@ LacrosseWebDevice.prototype = {
             });
             })
             .updateValue(this.details.services.probeTemp.value);
+	    }
         break;
 	    case "currentRH":
 		this.humiditySensor
@@ -383,6 +392,7 @@ LacrosseWebDevice.prototype = {
                     callback(null, this.dataMap.lowBatt.homekit[this.details.services.lowBatt.value]);
                 });
 		    }).updateValue(this.details.services.lowBatt.value);
+            if (this.probeTemperatureSensor) {
         this.probeTemperatureSensor
             .getCharacteristic(Characteristic.StatusLowBattery)
             .on("get", callback => {
@@ -391,6 +401,7 @@ LacrosseWebDevice.prototype = {
             });
             })
             .updateValue(this.details.services.lowBatt.value);
+	    }
 		this.humiditySensor
 		    .getCharacteristic(Characteristic.StatusLowBattery)
 		    .on("get", callback => {
