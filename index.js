@@ -312,9 +312,23 @@ function LacrosseWebDevice(log, details, platform) {
 
     this.ambientTemperatureSensor = new Service.TemperatureSensor(details.name);
     this.ambientTemperatureSensor.subtype = "Ambient";
+    this.ambientTemperatureSensor
+        .getCharacteristic(Characteristic.CurrentTemperature)
+        .setProps({
+            minValue: -100,
+            maxValue: 100,
+            description: "Ambient Temperature"
+        });
     if (details.services.probeTemp.value) {
     this.probeTemperatureSensor = new Service.TemperatureSensor(details.name);
     this.probeTemperatureSensor.subtype = "Probe";
+    this.probeTemperatureSensor
+        .getCharacteristic(Characteristic.CurrentTemperature)
+        .setProps({
+            minValue: -100,
+            maxValue: 100,
+            description: "Probe Temperature"
+        });
     } else {
         this.probeTemperatureSensor = null ;
     }
